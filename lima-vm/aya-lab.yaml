@@ -1,0 +1,126 @@
+# Change cpu/memory if required
+cpus: 4
+memory: "8GiB"
+
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
+    arch: "x86_64"
+  - location: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-arm64.img"
+    arch: "aarch64"
+
+# macOS Virtualization.Framework(vz) is faster than QUEM: https://lima-vm.io/docs/config/vmtype/
+vmType: "vz"
+mountType: "virtiofs"
+
+mounts:
+  - location: "~"
+    writable: true
+  - location: "/tmp/lima"
+    writable: true
+
+# containerd is managed by Docker, not by Lima, so the values are set to false here.
+containerd:
+  system: false
+  user: false
+
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail    
+      wget https://apt.llvm.org/llvm.sh
+      chmod +x llvm.sh
+      ./llvm.sh `8` all
+      apt-get update -y
+      apt-get install -y pkg-config libssl-dev
+      apt-get install -y libzstd-dev
+
+      LLVMFILES=/usr/bin/llvm-*
+      CLANGFILES=/usr/bin/clang-*
+      LLC=/usr/bin/llc-*
+      OPT=/usr/bin/opt-*
+      for f in $LLVMFILES $CLANGFILES $LLC $OPT
+      do
+        link=${f::-3}
+        echo "linking" $f "to" $link
+        ln -s $f $link
+      done
+
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      apt-get update -y
+      apt-get install -y apt-transport-https ca-certificates curl jq
+      apt-get install -y linux-tools-common linux-tools-$(uname -r)
+      apt-get install -y libelf-dev libcap-dev libpcap-dev libbfd-dev binutils-dev build-essential make
+      apt-get install -y bpfcc-tools
+      apt-get install -y python3-pip
+      sysctl -w kernel.bpf_stats_enabled=1
+      snap install yq
+
+  - mode: system
+    script: |
+      #!/bin/bash
+      apt install -y ubuntu-dbgsym-keyring
+      echo "deb http://ddebs.ubuntu.com $(lsb_release -cs) main restricted universe multiverse
+      deb http://ddebs.ubuntu.com $(lsb_release -cs)-updates main restricted universe multiverse
+      deb http://ddebs.ubuntu.com $(lsb_release -cs)-proposed main restricted universe multiverse" | \
+      sudo tee -a /etc/apt/sources.list.d/ddebs.list
+      apt-get install -y bpftrace-dbgsym
+
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      apt-get install -y libbpf-dev
+      ln -sf /usr/include/$(uname -m)-linux-gnu/asm /usr/include/asm
+
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      ln -sf /usr/lib/$(uname -m)-linux-gnu/libbfd.so /usr/lib/libbfd.so
+
+      git clone --recurse-submodules https://github.com/libbpf/bpftool.git
+      cd bpftool
+      git submodule update --init
+      cd src
+      make install
+
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      apt install -y protobuf-compiler libprotobuf-dev
+      curl -sSL "https://github.com/fullstorydev/grpcurl/releases/download/v1.9.1/grpcurl_1.9.1_linux_arm64.tar.gz" | tar -xz -C /usr/local/bin
+
+  - mode: user
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+  - mode: user
+    script: |
+      #!/bin/bash
+      # https://aya-rs.dev/book/start/development/
+      set -eux -o pipefail
+      rustup install stable
+      rustup toolchain add nightly
+      rustup toolchain install nightly --component rust-src
+      cargo install cargo-generate
+      cargo install --no-default-features bpf-linker
+      cargo install bindgen-cli
+      cargo install --git https://github.com/aya-rs/aya -- aya-tool
+
+probes:
+  - description: "bpftool to be installed"
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      if ! timeout 30s bash -c "until command -v bpftool >/dev/null 2>&1; do sleep 3; done"; then
+        echo >&2 "bpftool is not installed yet"
+        exit 1
+      fi
+    hint: See "/var/log/cloud-init-output.log". in the guest
