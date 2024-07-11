@@ -114,6 +114,14 @@ provision:
       cargo install bindgen-cli
       cargo install --git https://github.com/aya-rs/aya -- aya-tool
 
+  - mode: user
+    script: |
+      #!/bin/bash
+      # https://aya-rs.dev/book/start/development/
+      set -eux -o pipefail
+      sudo apt-get install bpfcc-tools linux-headers-$(uname -r)
+      apt install python-is-python3
+
 probes:
   - description: "bpftool to be installed"
     script: |

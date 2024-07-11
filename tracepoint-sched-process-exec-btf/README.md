@@ -1,0 +1,39 @@
+# bpf-loop
+
+## Prerequisites
+
+1. Install bpf-linker: `cargo install bpf-linker`
+
+## Build eBPF
+
+```bash
+cargo xtask build-ebpf
+```
+
+To perform a release build you can use the `--release` flag.
+You may also change the target architecture with the `--target` flag.
+
+## Build Userspace
+
+```bash
+cargo build
+```
+
+## Build eBPF and Userspace
+
+```bash
+cargo xtask build
+```
+
+## generate Rust code of ebpf structs
+
+```bash
+RUST_LOG=info cargo xtask codegen
+```
+
+## Run
+
+```bash
+RUST_LOG=info cargo xtask run
+```
+
