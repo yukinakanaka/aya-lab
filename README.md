@@ -16,3 +16,7 @@ memory: "8GiB"
 ```
 limactl start lima-vm/aya-lab.yaml
 ```
+
+## Blog posts
+
+- [Writing eBPF Tracepoint Program with Rust Aya: Tips and Example](https://yuki-nakamura.com/2024/07/06/writing-ebpf-tracepoint-program-with-rust-aya-tips-and-example/)
