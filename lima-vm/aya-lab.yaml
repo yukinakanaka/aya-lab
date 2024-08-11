@@ -119,3 +119,13 @@ probes:
         exit 1
       fi
     hint: See "/var/log/cloud-init-output.log". in the guest
+
+  - description: "user setup to be done"
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      if ! timeout 30s bash -c "until test -e /tmp/done >/dev/null 2>&1; do sleep 3; done"; then
+        echo >&2 "user setup is not done yet"
+        exit 1
+      fi
+    hint: See "/var/log/cloud-init-output.log". in the guest
