@@ -9,7 +9,7 @@ mod bindings;
 use bindings::{pid_t, task_struct};
 
 use aya_ebpf::{
-    helpers::{bpf_get_current_pid_tgid, bpf_probe_read},
+    helpers::{bpf_get_current_pid_tgid, bpf_probe_read_kernel},
     macros::kprobe,
     programs::ProbeContext,
 };
@@ -43,14 +43,14 @@ unsafe fn try_wake_up_new_task(ctx: ProbeContext) -> Result<u32, i64> {
     let task: *const task_struct = ctx.arg(0).ok_or(1)?;
 
     // Read values from task_struct
-    let comm = bpf_probe_read(&(*task).comm as *const [::aya_ebpf::cty::c_char; 16usize])?;
+    let comm = bpf_probe_read_kernel(&(*task).comm as *const [::aya_ebpf::cty::c_char; 16usize])?;
     let comm = core::str::from_utf8_unchecked(&comm);
-    let tgid = bpf_probe_read(&(*task).tgid as *const pid_t)?;
-    let tid = bpf_probe_read(&(*task).pid as *const pid_t)?;
+    let tgid = bpf_probe_read_kernel(&(*task).tgid as *const pid_t)?;
+    let tid = bpf_probe_read_kernel(&(*task).pid as *const pid_t)?;
 
     info!(
         &ctx,
-        "wake_up_new_task. comm: {}, tgid: {}, tid: {}, caller: {}.", comm, tgid, tid, caller_tgid
+        "wake_up_new_task. caller: {}, comm: {}, tgid: {}, tid: {}.", caller_tgid, comm, tgid, tid
     );
     Ok(0)
 }
