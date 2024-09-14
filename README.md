@@ -21,3 +21,4 @@ limactl start lima-vm/aya-lab.yaml
 
 - [Writing eBPF Tracepoint Program with Rust Aya: Tips and Example](https://yuki-nakamura.com/2024/07/06/writing-ebpf-tracepoint-program-with-rust-aya-tips-and-example/)
 - [Writing eBPF RawTracepoint Program with Rust Aya](https://yuki-nakamura.com/2024/08/12/writing-ebpf-rawtracepoint-program-with-rust-aya/)
+- [Writing eBPF Kprobe Program with Rust Aya](https://yuki-nakamura.com/2024/09/14/writing-ebpf-kprobe-program-with-rust-aya/)
