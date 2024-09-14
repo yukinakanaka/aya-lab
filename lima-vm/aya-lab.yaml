@@ -90,6 +90,13 @@ provision:
       cd src
       make install
 
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      curl -fLJ https://github.com/Netflix/bpftop/releases/latest/download/bpftop-aarch64-unknown-linux-gnu -o bpftop && chmod +x bpftop
+      mv bpftop /usr/bin/bpftop
+
   - mode: user
     script: |
       #!/bin/bash
