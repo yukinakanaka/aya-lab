@@ -42,7 +42,13 @@ pub struct Options {
 pub fn build_ebpf(opts: Options) -> Result<(), anyhow::Error> {
     let dir = PathBuf::from("ebpf");
     let target: String = format!("--target={}", opts.target);
-    let mut args: Vec<&str> = vec!["+nightly-2024-07-23", "build", target.as_str(), "-Z", "build-std=core"];
+    let mut args: Vec<&str> = vec![
+        "+nightly-2024-07-23",
+        "build",
+        target.as_str(),
+        "-Z",
+        "build-std=core",
+    ];
     if opts.release {
         args.push("--release");
     }
