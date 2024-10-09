@@ -1,0 +1,23 @@
+[package]
+name = "user"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+anyhow = "1.0.86"
+aya = "0.12.0"
+aya-log = "0.2.0"
+bytes = "1.6.0"
+libc = "0.2.155"
+common = { version = "0.1.0", path = "../common", features = ["user"] }
+tokio = { version = "1.38.0", features = ["full"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+
+[[bin]]
+name = "observer"
+path = "src/main.rs"
+
+[build-dependencies]
+tonic-build = "0.11.0"
