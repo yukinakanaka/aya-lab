@@ -97,7 +97,7 @@ fn load_tail_called_program(
     flags: u64,
 ) -> anyhow::Result<()> {
     let program: &mut BtfTracePoint = bpf.program_mut(function_name).unwrap().try_into()?;
-    program.load(TRACE_POINT, btf)?;
+    program.load("sched_process_fork", btf)?;
     let fd = program.fd().unwrap();
     tail_call_map.set(index, fd, flags)?;
     debug!("set {} in tail_call_map", function_name);
