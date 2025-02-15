@@ -109,8 +109,8 @@ provision:
       # https://aya-rs.dev/book/start/development/
       set -eux -o pipefail
       rustup install stable
-      rustup toolchain add nightly-2024-07-23
-      rustup toolchain install nightly-2024-07-23 --component rust-src
+      rustup toolchain add nightly-2024-11-01
+      rustup toolchain install nightly-2024-11-01 --component rust-src
       cargo install cargo-generate
       cargo install --no-default-features bpf-linker@0.9.12
       cargo install bindgen-cli
