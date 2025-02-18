@@ -78,9 +78,20 @@ async fn main() -> Result<(), anyhow::Error> {
                     let filename = String::from_utf8(data.filename[..data.filename_len].to_vec())
                         .unwrap_or("Unknown".to_owned());
 
+                    // parse arg
+                    info!("args: {}", data.args[0]);
+                    let args = String::from_utf8(
+                        data.args
+                            .split(|&b| b == 0) // Split by null (`\0`) bytes
+                            .filter(|s| !s.is_empty()) // Remove empty slices
+                            .collect::<Vec<_>>() // Convert to `Vec<Vec<u8>>`
+                            .join(&b' '), // Join elements with a space (`b' '`)
+                    )
+                    .unwrap_or("Unknown".to_owned());
+
                     info!(
-                        "{} {} {} {}",
-                        data.pid, data.uid, filename, data.filename_len
+                        "{} {} {} {} {}",
+                        data.pid, data.uid, filename, data.filename_len, args
                     );
                 }
             }
